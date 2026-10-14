@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#542c45">
+<title>Spirit Home Worship | Dons solidaires</title>
+<style>
+:root{--wine:#542c45;--gold:#e8c98b;--cream:#fffaf4}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--cream);color:#30232b}
+header{background:var(--wine);color:white;text-align:center;padding:28px 16px}
+header .heart{font-size:38px;color:var(--gold)}
+h1{font-size:25px;margin:8px 0}
+header p{margin:8px 0;color:#f4e8ee}
+main{max-width:650px;margin:22px auto;padding:0 14px}
+.card{background:white;border:1px solid #eadfe5;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 4px 16px #542c450d}
+h2{font-size:20px;color:var(--wine);margin-top:0}
+label{display:block;font-weight:bold;margin:15px 0 7px}
+input,select,button{width:100%;padding:13px;border-radius:9px;font-size:16px}
+input,select{border:1px solid #cdbdc7;background:white}
+button{border:0;background:var(--wine);color:white;font-weight:bold;margin-top:15px;cursor:pointer}
+button.secondary{background:#f2e8ee;color:var(--wine);border:1px solid #d8c3d0}
+.notice{background:#fff4db;border-radius:10px;padding:12px;font-size:14px;line-height:1.5}
+.tabs{display:flex;gap:8px;margin-bottom:15px}
+.tabs button{margin:0;flex:1}
+.tabs button.active{background:#81556e}
+.stat{background:#f7eff3;padding:16px;border-radius:10px;margin:10px 0}
+.small{font-size:13px;color:#665660;line-height:1.5}
+.hidden{display:none}
+footer{text-align:center;padding:24px;color:#665660;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{text-align:left;padding:9px 4px;border-bottom:1px solid #eee}
+</style>
+</head>
+<body>
+<header>
+<div class="heart">♥</div>
+<h1>SPIRIT HOME WORSHIP</h1>
+<p>Dons solidaires · L'amour en action</p>
+<p><i>« Que chacun donne comme il l'a résolu en son cœur. »</i><br>2 Corinthiens 9:7</p>
+</header>
+
+<main>
+<div class="notice">
+<strong>Version de démonstration</strong><br>
+Aucun paiement réel n'est effectué. N'entre aucune information bancaire ni aucun numéro de téléphone.
+</div>
+
+<div class="tabs">
+<button id="donorTab" class="active" onclick="showPage('donor')">Faire un don</button>
+<button id="adminTab" class="secondary" onclick="showPage('admin')">Suivi des dons</button>
+</div>
+
+<section id="donor" class="card">
+<h2>Faire un don anonyme</h2>
+<p>Chaque geste peut apporter du réconfort à une personne dans le besoin.</p>
+
+<form id="donationForm">
+<label for="amount">Montant (FCFA)</label>
+<select id="amount" required>
+<option value="500">500 FCFA</option>
+<option value="1000" selected>1 000 FCFA</option>
+<option value="2000">2 000 FCFA</option>
+<option value="5000">5 000 FCFA</option>
+<option value="10000">10 000 FCFA</option>
+</select>
+
+<label for="method">Moyen de paiement souhaité</label>
+<select id="method">
+<option>MTN Mobile Money (simulation)</option>
+<option>Orange Money (simulation)</option>
+</select>
+
+<div class="notice" style="margin-top:16px">
+Aucun nom ni numéro n'est demandé. Cette maquette enregistre uniquement un montant, un moyen choisi et une référence de test.
+</div>
+<button type="submit">Simuler mon don</button>
+</form>
+<p id="result" role="status" aria-live="polite"></p>
+</section>
+
+<section id="admin" class="card hidden">
+<h2>Suivi des dons simulés</h2>
+<p class="small">Ces chiffres sont uniquement des données de test enregistrées dans ce navigateur. Cet espace n'est pas protégé par un mot de passe et ne convient pas aux dons réels.</p>
+<div class="stat">Nombre de dons : <strong id="count">0</strong></div>
+<div class="stat">Total simulé : <strong id="total">0 FCFA</strong></div>
+<div style="overflow-x:auto">
+<table>
+<thead><tr><th>Référence</th><th>Montant</th><th>Moyen</th></tr></thead>
+<tbody id="rows"><tr><td colspan="3">Aucun don simulé</td></tr></tbody>
+</table>
+</div>
+<button class="secondary" onclick="resetDemo()">Effacer les données de test</button>
+</section>
+</main>
+
+<footer>
+Spirit Home Worship · L'amour en action<br>
+Maquette éducative — pas de paiement réel.
+</footer>
+
+<script>
+const KEY = "shw_demo_donations";
+function getDonations(){
+  try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+  catch(e) { return []; }
+}
+function showPage(page){
+  document.getElementById("donor").classList.toggle("hidden",page!=="donor");
+  document.getElementById("admin").classList.toggle("hidden",page!=="admin");
+  document.getElementById("donorTab").classList.toggle("active",page==="donor");
+  document.getElementById("adminTab").classList.toggle("active",page==="admin");
+  document.getElementById("donorTab").classList.toggle("secondary",page!=="donor");
+  document.getElementById("adminTab").classList.toggle("secondary",page!=="admin");
+  if(page==="admin") render();
+}
+document.getElementById("donationForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  const donations=getDonations();
+  const ref="SHW-TEST-"+String(Date.now()).slice(-8);
+  const donation={
+    ref:ref,
+    amount:Number(document.getElementById("amount").value),
+    method:document.getElementById("method").value
+  };
+  donations.push(donation);
+  try {
+    localStorage.setItem(KEY,JSON.stringify(donations));
+    document.getElementById("result").textContent=
+      "Don simulé ! Référence : "+ref+". Aucun argent n'a été transféré.";
+    render();
+  } catch(err) {
+    document.getElementById("result").textContent=
+      "Le navigateur n'a pas pu enregistrer la simulation.";
+  }
+});
+function render(){
+  const donations=getDonations();
+  document.getElementById("count").textContent=donations.length;
+  document.getElementById("total").textContent=
+    donations.reduce((s,d)=>s+d.amount,0).toLocaleString("fr-FR")+" FCFA";
+  const rows=document.getElementById("rows");
+  rows.replaceChildren();
+  if(!donations.length){
+    const tr=document.createElement("tr"),td=document.createElement("td");
+    td.colSpan=3;td.textContent="Aucun don simulé";tr.appendChild(td);rows.appendChild(tr);
+    return;
+  }
+  donations.forEach(d=>{
+    const tr=document.createElement("tr");
+    [d.ref,d.amount.toLocaleString("fr-FR")+" F",d.method].forEach(value=>{
+      const td=document.createElement("td");td.textContent=value;tr.appendChild(td);
+    });
+    rows.appendChild(tr);
+  });
+}
+function resetDemo(){
+  if(confirm("Effacer toutes les simulations sur ce navigateur ?")){
+    localStorage.removeItem(KEY);
+    document.getElementById("result").textContent="";
+    render();
+  }
+}
+render();
+</script>
+</body>
+</html>
